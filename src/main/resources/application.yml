@@ -1,0 +1,130 @@
+server:
+  port: 9999
+
+spring:
+  cloud:
+    gateway:
+      default-filters:
+        - name: RequestRateLimiter
+          args:
+            redis-rate-limiter.replenishRate: 5   # 5 requisições por segundo
+            redis-rate-limiter.burstCapacity: 10  # pode "explodir" até 10 requisições em momentos de pico
+            redis-rate-limiter.requestedTokens: 1
+          # chave para controle por IP
+          key-resolver: "#{@ipKeyResolver}"
+
+      routes:
+        - id: client-bff
+          uri: http://localhost:9092
+          predicates:
+            - Path=/clients/**
+          filters:
+            - RewritePath=/clients(?<remaining>.*), /bff/clients${remaining}
+            - name: ApiKeyFilter
+              args:
+                name: X-Forwarded-Host
+                value: "localhost:9191"
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 5   # 5 requisições por segundo
+                redis-rate-limiter.burstCapacity: 10  # pode "explodir" até 10 requisições em momentos de pico
+                redis-rate-limiter.requestedTokens: 1
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY, GATEWAY_TIMEOUT, INTERNAL_SERVER_ERROR
+                methods: GET, POST
+                backoff:
+                  firstBackoff: 1000
+                  maxBackoff: 5000
+                  factor: 2
+            - name: CircuitBreaker
+              args:
+                name: clientServiceCircuitBreaker
+                fallbackUri: forward:/fallback/clients
+                statusCodes: BAD_GATEWAY, GATEWAY_TIMEOUT, INTERNAL_SERVER_ERROR
+
+        - id: order-bff
+          uri: http://localhost:9092
+          predicates:
+            - Path=/orders/**
+          filters:
+            - RewritePath=/orders(?<remaining>.*), /bff/orders${remaining}
+            - name: ApiKeyFilter
+
+        - id: problem-details-docs # http://gateway.seusistema.com/docs/ vai rotear para https://localhost:8443/
+          uri: https://localhost:8443
+          predicates:
+            - Path=/docs/**
+
+        # ACTIVITIES
+        - id: activity-bff
+          uri: http://localhost:9092
+          predicates:
+            - Path=/activities/**
+          filters:
+            - RewritePath=/activities(?<remaining>.*), /bff/activities${remaining}
+
+        # ACTIVITY EMPLOYEES
+        - id: activity-employee-bff
+          uri: http://localhost:9092
+          predicates:
+            - Path=/activity-employees/**
+          filters:
+            - RewritePath=/activity-employees(?<remaining>.*), /bff/activity-employees${remaining}
+
+        # EMPLOYEE KNOWLEDGE ADVISORS
+        - id: employee-knowledge-advisor-bff
+          uri: http://localhost:9092
+          predicates:
+            - Path=/employee-knowledge-advisors/**
+          filters:
+            - RewritePath=/employee-knowledge-advisors(?<remaining>.*), /bff/employee-knowledge-advisors${remaining}
+
+        # COURSES
+        - id: course-bff
+          uri: http://localhost:9092
+          predicates:
+            - Path=/courses/**
+          filters:
+            - RewritePath=/courses(?<remaining>.*), /bff/courses${remaining}
+
+        # EMPLOYEES
+        - id: employee-bff
+          uri: http://localhost:9092
+          predicates:
+            - Path=/employees/**
+          filters:
+            - RewritePath=/employees(?<remaining>.*), /bff/employees${remaining}
+
+        # EMPLOYEE ROLES
+        - id: employee-role-bff
+          uri: http://localhost:9092
+          predicates:
+            - Path=/employee-roles/**
+          filters:
+            - RewritePath=/employee-roles(?<remaining>.*), /bff/employee-roles${remaining}
+
+        # ENROLLMENTS
+        - id: enrollment-bff
+          uri: http://localhost:9092
+          predicates:
+            - Path=/enrollments/**
+          filters:
+            - RewritePath=/enrollments(?<remaining>.*), /bff/enrollments${remaining}
+
+        # DOCUMENTAÇÃO EXTERNA
+        - id: problem-details-docs
+          uri: https://localhost:8443
+          predicates:
+            - Path=/docs/**
+
+apikeys:
+  valid-keys:
+    - 550e8400-e29b-41d4-a716-446655440000
+    - d290f1ee-6c54-4b01-90e6-d701748f0851
+    - 7b5d75f7-b7e8-4c4f-b5c9-594437365e02
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
