@@ -57,6 +57,68 @@ spring:
           predicates:
             - Path=/docs/**
 
+        # ACTIVITIES
+        - id: activity-bff
+          uri: http://localhost:9092
+          predicates:
+            - Path=/activities/**
+          filters:
+            - RewritePath=/activities(?<remaining>.*), /bff/activities${remaining}
+
+        # ACTIVITY EMPLOYEES
+        - id: activity-employee-bff
+          uri: http://localhost:9092
+          predicates:
+            - Path=/activity-employees/**
+          filters:
+            - RewritePath=/activity-employees(?<remaining>.*), /bff/activity-employees${remaining}
+
+        # EMPLOYEE KNOWLEDGE ADVISORS
+        - id: employee-knowledge-advisor-bff
+          uri: http://localhost:9092
+          predicates:
+            - Path=/employee-knowledge-advisors/**
+          filters:
+            - RewritePath=/employee-knowledge-advisors(?<remaining>.*), /bff/employee-knowledge-advisors${remaining}
+
+        # COURSES
+        - id: course-bff
+          uri: http://localhost:9092
+          predicates:
+            - Path=/courses/**
+          filters:
+            - RewritePath=/courses(?<remaining>.*), /bff/courses${remaining}
+
+        # EMPLOYEES
+        - id: employee-bff
+          uri: http://localhost:9092
+          predicates:
+            - Path=/employees/**
+          filters:
+            - RewritePath=/employees(?<remaining>.*), /bff/employees${remaining}
+
+        # EMPLOYEE ROLES
+        - id: employee-role-bff
+          uri: http://localhost:9092
+          predicates:
+            - Path=/employee-roles/**
+          filters:
+            - RewritePath=/employee-roles(?<remaining>.*), /bff/employee-roles${remaining}
+
+        # ENROLLMENTS
+        - id: enrollment-bff
+          uri: http://localhost:9092
+          predicates:
+            - Path=/enrollments/**
+          filters:
+            - RewritePath=/enrollments(?<remaining>.*), /bff/enrollments${remaining}
+
+        # DOCUMENTAÇÃO EXTERNA
+        - id: problem-details-docs
+          uri: https://localhost:8443
+          predicates:
+            - Path=/docs/**
+
 apikeys:
   valid-keys:
     - 550e8400-e29b-41d4-a716-446655440000
