@@ -90,3 +90,13 @@ URL externa	                        Internamente redireciona para
 /enrollments/**	                    /bff/enrollments/**
 
 # api-skillb-gateway
+
+docker build -t rogeriofontes/api-skillb-gateway:v1 .
+docker login
+docker push rogeriofontes/api-skillb-gateway:v1
+
+
+docker-compose -f docker-compose-api.yml up -d
+docker-compose -f docker-compose-api.yml down
+---
+docker-compose -f docker-compose-hub.yml up -d

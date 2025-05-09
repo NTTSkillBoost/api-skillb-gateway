@@ -11,4 +11,4 @@ COPY target/*.jar app.jar
 EXPOSE 9999
 
 # Comando para rodar a aplicação
-ENTRYPOINT ["java", "-Dspring.profiles.active=dev", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Dspring.profiles.active=${SPRING_PROFILE:dev}", "-jar", "app.jar"]
